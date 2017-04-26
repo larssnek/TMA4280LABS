@@ -229,10 +229,6 @@ void transpose(real **bt, real **b, real *bvalues, real *btvalues, int *bsize, i
 
 	int np = nrows[rank];
 
-
-
-  
-
   // Copy sub-blocks with packing 
 	real *Bpck = btvalues;
 	for (int p = 0, off_rp = 0; p < size; off_rp+=nrows[p], ++p){

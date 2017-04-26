@@ -28,7 +28,6 @@ typedef int bool;
 real *mk_1D_array(size_t n, bool zero);
 real **mk_2D_array(size_t n1, size_t n2, bool zero);
 void transpose(real **bt, real **b, real *bvalues, real *btvalues, int *bsize, int *displ,int *nrows, int size, int rank, int m);
-void transpose2(real **bt, real **b, int *ncols, int *displ, int size, int rank);
 real rhs(real x, real y);
 void fst_(real *v, int *n, real *w, int *nn);
 void fstinv_(real *v, int *n, real *w, int *nn);
@@ -135,7 +134,6 @@ int main(int argc, char **argv)
 		fst_(b[i], &n, z[i], &nn);
 	}
 	
-	//transpose2(bt, b, nrows, local_displacement, size, rank);
 	transpose(bt, b,bvalues,btvalues, bsize,displacement,nrows,size,rank,m);
 	
 	
@@ -157,8 +155,7 @@ int main(int argc, char **argv)
 	for (size_t i = 0; i < nrows[rank]; i++) {
 		fst_(bt[i], &n, z[i], &nn);
 	}
-	
-	//transpose2(b, bt, nrows, local_displacement, size, rank);
+
 	transpose(b, bt,bvalues,btvalues, bsize,displacement,nrows,size,rank,m);
 	
 	#pragma omp parallel for schedule(static)
@@ -235,10 +232,6 @@ void transpose(real **bt, real **b, real *bvalues, real *btvalues, int *bsize, i
 
 	int np = nrows[rank];
 
-
-
-  
-
   // Copy sub-blocks with packing 
 	real *Bpck = btvalues;
 	for (int p = 0, off_rp = 0; p < size; off_rp+=nrows[p], ++p){
@@ -268,36 +261,6 @@ void transpose(real **bt, real **b, real *bvalues, real *btvalues, int *bsize, i
 
 }
 
-void transpose2(real **bt, real **b, int *ncols, int *displ, int size, int rank)
-{
-    int *temp_displ = calloc(size+1, sizeof(int));
-    int *temp_cols = calloc(size, sizeof(int));
-    double *temp = calloc(ncols[rank]*size, sizeof(double));
-
-    temp_displ[0] = 0;
-    for (int i = 1; i < size+1; i++){
-        temp_displ[i] = temp_displ[i-1] + ncols[rank];
-        temp_cols[i-1] = ncols[rank];
-    }
-
-    for (size_t i = 0; i < ncols[size-1]; i++){
-        if(i <ncols[rank]){
-             MPI_Alltoallv(b[i], ncols, displ, MPI_DOUBLE,
-                     temp, temp_cols, temp_displ, MPI_DOUBLE, MPI_COMM_WORLD);
-        }
-        else{
-            MPI_Alltoallv(b[i-1], ncols, displ, MPI_DOUBLE, 
-                    temp, temp_cols, temp_displ, MPI_DOUBLE, MPI_COMM_WORLD);
-        }
-        for(size_t r = 0; r < size; r++){
-            for(size_t c = 0; c < ncols[rank]; c++){
-                if(displ[r]+i < displ[r+1]){
-                    bt[c][displ[r]+i] = temp[temp_displ[r]+c];
-                }
-            }
-        }
-    }
-}
 
 
 
