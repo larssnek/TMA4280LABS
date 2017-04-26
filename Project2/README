@@ -1,0 +1,7 @@
+Readme file
+
+The directory "convergence" contains files to test the convergence of the implementation
+It writes the results to the file maxerror.txt. Also the directory contains the matlab script used to make all the plots, notice that the txt-files for the matlab implementation is not included
+
+The directory "Poisson" contains the Poisson solver computing the value of the problem
+It writes the results to the file umax.txt.
